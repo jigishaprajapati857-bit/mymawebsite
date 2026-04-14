@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MacroDroid Direct Connect</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #e5ddd5; display: flex; justify-content: center; padding: 20px; }
+        .box { width: 100%; max-width: 400px; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h3 { text-align: center; color: #075e54; margin-top: 0; }
+        .msg-box { border: 1px solid #d1d1d1; padding: 15px; min-height: 40px; margin: 10px 0; border-radius: 8px; background: #fdfdfd; font-weight: bold; color: #128c7e; text-align: center; }
+        input { width: 100%; padding: 12px; margin: 10px 0; box-sizing: border-box; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; }
+        button { width: 100%; padding: 12px; background: #25d366; color: white; border: none; cursor: pointer; border-radius: 8px; font-size: 16px; font-weight: bold; transition: 0.3s; }
+        button:hover { background: #128c7e; }
+        #statusMessage { text-align: center; margin-top: 10px; font-size: 14px; font-weight: 500; height: 20px; }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        hr { border: 0; border-top: 1px solid #eee; margin: 20px 0; }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h3>MacroDroid Link</h3>
+    
+    <p style="margin-bottom:5px;">મોબાઈલથી મળેલો મેસેજ:</p>
+    <div id="incomingMessage" class="msg-box">કોઈ નવો મેસેજ નથી...</div>
+
+    <hr>
+    
+    <p style="margin-bottom:5px;">મોબાઈલ પર મોકલો:</p>
+    <input type="text" id="webURL" placeholder="અહીં Webhook URL પેસ્ટ કરો">
+    <input type="text" id="outMsg" placeholder="મેસેજ ટાઈપ કરો...">
+    <button onclick="sendToMobile()">મોબાઈલ પર મોકલો</button>
+    
+    <div id="statusMessage"></div>
+</div>
+
+<script>
+    // ૧. મોબાઈલથી વેબસાઈટ પર આવેલો મેસેજ ચેક કરવા માટે
+    function checkIncoming() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const myMsg = urlParams.get('mymsg'); 
+        if (myMsg) {
+            document.getElementById('incomingMessage').innerText = decodeURIComponent(myMsg);
+            // URL ક્લીન કરવા માટે (જેથી રિફ્રેશ કરવા પર જૂનો મેસેજ ન દેખાય)
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    }
+
+    // ૨. વેબસાઈટથી મોબાઈલ પર મેસેજ મોકલવા માટે
+    async function sendToMobile() {
+        const url = document.getElementById('webURL').value;
+        const msg = document.getElementById('outMsg').value;
+        const statusDiv = document.getElementById('statusMessage');
+
+        if(!url) { 
+            statusDiv.innerText = "ભૂલ: URL ખાલી છે!";
+            statusDiv.className = "error";
+            return; 
+        }
+        
+        statusDiv.innerText = "મોકલી રહ્યું છે...";
+        statusDiv.className = "";
+
+        try {
+            // Webhook રિક્વેસ્ટ
+            await fetch(`${url}?message=${encodeURIComponent(msg)}`, { mode: 'no-cors' });
+            
+            // સફળતાનો મેસેજ બટન નીચે બતાવવા માટે
+            statusDiv.innerText = "✓ મેસેજ સફળતાપૂર્વક મોકલાઈ ગયો!";
+            statusDiv.className = "success";
+            
+            // ઇનપુટ બોક્સ ખાલી કરવા
+            document.getElementById('outMsg').value = "";
+            
+            // 3 સેકન્ડ પછી સ્ટેટસ મેસેજ ગાયબ કરી દેવો
+            setTimeout(() => { statusDiv.innerText = ""; }, 3000);
+            
+        } catch (error) {
+            statusDiv.innerText = "ક્ષતિ: મેસેજ મોકલી શકાયો નથી.";
+            statusDiv.className = "error";
+        }
+    }
+
+    // પેજ લોડ થાય ત્યારે ફંક્શન રન કરો
+    window.onload = checkIncoming;
+</script>
+
+</body>
+</html>
