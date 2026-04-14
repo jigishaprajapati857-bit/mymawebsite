@@ -28,62 +28,58 @@
 
     <hr>
     
-    <p style="margin-bottom:5px;">મોબાઈલ પર મોકલો:</p>
-    <input type="text" id="webURL" placeholder="અહીં Webhook URL પેસ્ટ કરો">
-    <input type="text" id="outMsg" placeholder="મેસેજ ટાઈપ કરો...">
-    <button onclick="sendToMobile()">મોબાઈલ પર મોકલો</button>
+    <p style="margin-bottom:5px;">મોબાઈલ પર મેસેજ મોકલો:</p>
+    <input type="text" id="outMsg" placeholder="મેસેજ અહીં ટાઈપ કરો...">
+    <button onclick="sendToMobile()">મોબાઈલ પર મોકલો ✨</button>
     
     <div id="statusMessage"></div>
 </div>
 
 <script>
+    // તમારી કાયમી Webhook URL અહીં સેટ છે
+    const MY_WEBHOOK_URL = "https://trigger.macrodroid.com/b95cf018-893b-4ebc-ac6e-d0ef781ac55d/mysite";
+
     // ૧. મોબાઈલથી વેબસાઈટ પર આવેલો મેસેજ ચેક કરવા માટે
     function checkIncoming() {
         const urlParams = new URLSearchParams(window.location.search);
         const myMsg = urlParams.get('mymsg'); 
         if (myMsg) {
             document.getElementById('incomingMessage').innerText = decodeURIComponent(myMsg);
-            // URL ક્લીન કરવા માટે (જેથી રિફ્રેશ કરવા પર જૂનો મેસેજ ન દેખાય)
             window.history.replaceState({}, document.title, window.location.pathname);
         }
     }
 
     // ૨. વેબસાઈટથી મોબાઈલ પર મેસેજ મોકલવા માટે
     async function sendToMobile() {
-        const url = document.getElementById('webURL').value;
         const msg = document.getElementById('outMsg').value;
         const statusDiv = document.getElementById('statusMessage');
 
-        if(!url) { 
-            statusDiv.innerText = "ભૂલ: URL ખાલી છે!";
+        if(!msg) { 
+            statusDiv.innerText = "મહેરબાની કરીને મેસેજ લખો! ✍️";
             statusDiv.className = "error";
             return; 
         }
         
-        statusDiv.innerText = "મોકલી રહ્યું છે...";
+        statusDiv.innerText = "મોકલી રહ્યું છે... 🚀";
         statusDiv.className = "";
 
         try {
-            // Webhook રિક્વેસ્ટ
-            await fetch(`${url}?message=${encodeURIComponent(msg)}`, { mode: 'no-cors' });
+            // Webhook રિક્વેસ્ટ - URL અને મેસેજ પેરામીટર
+            await fetch(`${MY_WEBHOOK_URL}?message=${encodeURIComponent(msg)}`, { mode: 'no-cors' });
             
-            // સફળતાનો મેસેજ બટન નીચે બતાવવા માટે
             statusDiv.innerText = "✓ મેસેજ સફળતાપૂર્વક મોકલાઈ ગયો!";
             statusDiv.className = "success";
             
-            // ઇનપુટ બોક્સ ખાલી કરવા
             document.getElementById('outMsg').value = "";
             
-            // 3 સેકન્ડ પછી સ્ટેટસ મેસેજ ગાયબ કરી દેવો
             setTimeout(() => { statusDiv.innerText = ""; }, 3000);
             
         } catch (error) {
-            statusDiv.innerText = "ક્ષતિ: મેસેજ મોકલી શકાયો નથી.";
+            statusDiv.innerText = "ક્ષતિ: મેસેજ મોકલી શકાયો નથી. ❌";
             statusDiv.className = "error";
         }
     }
 
-    // પેજ લોડ થાય ત્યારે ફંક્શન રન કરો
     window.onload = checkIncoming;
 </script>
 
